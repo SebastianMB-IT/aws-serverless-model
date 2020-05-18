@@ -1,18 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: 'sam-pantry
+Description: 'sam-app
 
-  Sample SAM Template for sam-pantry
+  Sample AWS SAM Template
 
   '
 Globals:
   Function:
     Timeout: 3
+Parameters:
+  PREFIX:
+    Type: String
+    Default: SAM
 Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: SamUserPool
+      UserPoolName:
+        Fn::Sub: ${PREFIX}UserPool
       Policies:
         PasswordPolicy:
           MinimumLength: 8

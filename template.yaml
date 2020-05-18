@@ -1,21 +1,27 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sam-pantry
+  sam-app
 
-  Sample SAM Template for sam-pantry
+  Sample AWS SAM Template
   
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 3
 
+Parameters:
+  PREFIX:
+    Type: String
+    Default: SAM
+
+
 Resources:
 
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: SamUserPool
+      UserPoolName: !Sub "${PREFIX}UserPool"
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -29,7 +35,7 @@ Resources:
   IamRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: SamRole
+      RoleName: !Sub "${PREFIX}IamRole"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -46,7 +52,7 @@ Resources:
   ApiEndpoint:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: Prod
+      StageName: !Sub "${PREFIX}ApiEndpoint"
       Cors: "'*'"
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
@@ -57,7 +63,7 @@ Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      FunctionName: helloWorld
+      FunctionName: !Sub "${PREFIX}helloWorld"
       CodeUri: functions/hello-world/
       Handler: app.lambdaHandler
       Runtime: nodejs12.x
@@ -76,4 +82,4 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   RestApi:
     Description: "API endpoint URLs for Prod stage:"
-    Value: !Sub "https://${ApiEndpoint}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${ApiEndpoint}.execute-api.${AWS::Region}.amazonaws.com/${PREFIX}ApiEndpoint/hello/"
