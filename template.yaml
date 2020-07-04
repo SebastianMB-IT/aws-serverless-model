@@ -14,7 +14,9 @@ Parameters:
   PREFIX:
     Type: String
     Default: SAM
-
+  EMAIL:
+    Type: String
+    Default: example@mail.io
 
 Resources:
 
@@ -25,12 +27,43 @@ Resources:
       Policies:
         PasswordPolicy:
           MinimumLength: 8
-      UsernameAttributes:
+      AliasAttributes:
         - email
-      Schema:
-        - AttributeDataType: String
-          Name: email
-          Required: false
+
+  CognitoUser:
+    Type: AWS::Cognito::UserPoolUser
+    Properties: 
+      UserPoolId: !Ref CognitoUserPool
+      Username: admin
+      UserAttributes: 
+        - Name: email
+          Value: !Sub "${EMAIL}"
+
+  CognitoAppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties: 
+      ClientName: !Sub "${PREFIX}AppClient"
+      ExplicitAuthFlows: 
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      PreventUserExistenceErrors: "ENABLED"
+      RefreshTokenValidity: 30
+      UserPoolId: !Ref CognitoUserPool
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: userid
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: userid
+          KeyType: HASH
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
 
   IamRole:
     Type: AWS::IAM::Role
